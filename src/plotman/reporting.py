@@ -12,7 +12,7 @@ def abbr_path(path, putative_prefix):
         return os.path.relpath(path, putative_prefix)
     else:
         return path
-    
+
 def phase_str(phase):
     if not phase.known:
         return '?:?'
@@ -37,12 +37,12 @@ def n_at_ph(jobs, ph):
 
 def n_to_char(n):
     n_to_char_map = dict(enumerate(" .:;!"))
-    
+
     if n < 0:
         return 'X'  # Should never be negative
     elif n >= len(n_to_char_map):
         n = len(n_to_char_map) - 1
-    
+
     return n_to_char_map[n]
 
 def job_viz(jobs):
@@ -143,6 +143,7 @@ def prometheus_report(jobs, tmp_prefix='', dst_prefix=''):
         'plotman_plot_user_time': 'Processor time (user) in s',
         'plotman_plot_sys_time': 'Processor time (sys) in s',
         'plotman_plot_iowait_time': 'Processor time (iowait) in s',
+        'plotman_plot_total_time': 'Total time of plot creation',
     }
     prom_stati = []
     for j in jobs:
@@ -162,6 +163,7 @@ def prometheus_report(jobs, tmp_prefix='', dst_prefix=''):
             'plotman_plot_user_time': j.get_time_user(),
             'plotman_plot_sys_time': j.get_time_sys(),
             'plotman_plot_iowait_time': j.get_time_iowait(),
+            'plotman_plot_total_time': j.get_time_wall(),
         }
         prom_stati += [(label_str, values)]
     return '\n'.join(to_prometheus_format(metrics, prom_stati))
@@ -186,7 +188,7 @@ def tmp_dir_report(jobs, dir_cfg, sched_cfg, width, start_row=None, end_row=None
     tab.set_deco(tt.Texttable.BORDER | tt.Texttable.HEADER )
     tab.set_deco(0)  # No borders
     return tab.draw()
- 
+
 def dst_dir_report(jobs, dstdirs, width, prefix=''):
     tab = tt.Texttable()
     dir2oldphase = manager.dstdirs_to_furthest_phase(jobs)
@@ -204,7 +206,7 @@ def dst_dir_report(jobs, dstdirs, width, prefix=''):
         dir_plots = plot_util.list_k32_plots(d)
         gb_free = int(plot_util.df_b(d) / plot_util.GB)
         n_plots = len(dir_plots)
-        priority = archive.compute_priority(eldest_ph, gb_free, n_plots) 
+        priority = archive.compute_priority(eldest_ph, gb_free, n_plots)
         row = [abbr_path(d, prefix), n_plots, gb_free,
                 phases_str(phases, 5), priority]
         tab.add_row(row)
